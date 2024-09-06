@@ -11,11 +11,19 @@ author: @jmerigot
 # +---------------------------------------------------------------------------------------+ #
 
 from torchvision import transforms
+
 from utils.functions import custom_transform
+from models.SLA_SmaAt_UNet import SmaAt_UNet_SLA
+from models.SLA_SST_SmaAt_UNet import SmaAt_UNet_SLA_SST
+
 
 """
 Only modify this file to make changes to forecasting process.
-sequence_length variable determines the prediction horizon.
+
+ - sequence_length variable determines the prediction horizon
+ 
+ - model_name determines the model being used 
+   (MAKE SURE to change include_sst to False in dataloader_config if using SLA-SmaAt-UNet)
 """
 
 
@@ -38,3 +46,18 @@ dataloader_config={'dataset_path': ['/data/home/jmerigot/start_data/sla_ts.npy',
                    'small_train': False,
                    'model_is_3dconv': False, # in case using a model with 3D convolutions; rare
                    'scale_with_train': False} # in case want to standard scale all datasets using the mean/std of the training set; rare
+
+
+models_dict = {
+    "smaat_unet_sla": SmaAt_UNet_SLA,
+    "smaat_unet_sla_sst": SmaAt_UNet_SLA_SST
+}
+
+#################################
+model_name = 'smaat_unet_sla_sst'
+#################################
+
+if model_name == 'smaat_unet_sla':
+    model_params = {'n_channels': sequence_length, 'n_classes': sequence_length}
+elif model_name == 'smaat_unet_sla_sst':
+    model_params = {'n_channels': sequence_length*2, 'n_classes': sequence_length*2}

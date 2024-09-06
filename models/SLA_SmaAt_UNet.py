@@ -6,20 +6,17 @@ author: @jmerigot
 
 # +---------------------------------------------------------------------------------------+ #
 # |                                                                                       | #
-# |                                SLA-SST-SmaAt-UNet model                               | #
+# |                                 SLA-SmaAt-UNet model                                  | #
 # |                                                                                       | #
 # +---------------------------------------------------------------------------------------+ #
 
 import torch
 from torch import nn
 import torch.nn.functional as F
-import torch.optim as optim
-import lightning as L
-import numpy as np
 
 
 class DepthwiseSeparableConv(nn.Module):
-    def __init__(self, in_channels, output_channels, kernel_size, padding=0, kernels_per_layer=1):
+    def __init__(self, in_channels, output_channels, kernel_size, padding=0, kernels_per_layer=2):
         super(DepthwiseSeparableConv, self).__init__()
         # In Tensorflow DepthwiseConv2D has depth_multiplier instead of kernels_per_layer
         self.depthwise = nn.Conv2d(in_channels, in_channels * kernels_per_layer, kernel_size=kernel_size, padding=padding,
@@ -43,6 +40,7 @@ class ChannelAttention(nn.Module):
         self.input_channels = input_channels
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
+        #  https://github.com/luuuyi/CBAM.fPyTorch/blob/master/model/resnet_cbam.py
         #  uses Convolutions instead of Linear
         self.MLP = nn.Sequential(
             Flatten(),
@@ -162,15 +160,15 @@ class OutConv(nn.Module):
 
     def forward(self, x):
         return self.conv(x)  
-
-
+    
+    
 ################################################
 ################### MODEL ######################
 ################################################
 
-class SmaAt_UNet_SLA_SST(nn.Module):
+class SmaAt_UNet_SLA(nn.Module):
     def __init__(self, n_channels, n_classes, kernels_per_layer=2, bilinear=True, reduction_ratio=16):
-        super(SmaAt_UNet_SLA_SST, self).__init__()
+        super(SmaAt_UNet_SLA, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         kernels_per_layer = kernels_per_layer
@@ -194,41 +192,21 @@ class SmaAt_UNet_SLA_SST(nn.Module):
         self.up4 = UpDS(128, 64, self.bilinear, kernels_per_layer=kernels_per_layer)
 
         self.outc = OutConv(64, self.n_classes)
-    
-    def forward(self, x_sla, x_sst):
-        last_sla_pos = x_sla.shape[1]//2 - 1
-        last_sla = x_sla[:, last_sla_pos, :, :]
-        last_sla_input=torch.unsqueeze(last_sla, axis=1)
         
-        last_sst = x_sst[:, -1, :, :]
-        last_sst_input=torch.unsqueeze(last_sst, axis=1)
-            
-        # concatenate the SLA and SST sequences along the channel dimension
-        x = torch.cat([x_sla, x_sst], dim=1)
-
-        # pass the concatenated sequence through the encoder
+    def forward(self, x):
         x1 = self.inc(x)
         x1Att = self.cbam1(x1)
-        x2 = self.down1(x1Att)
+        x2 = self.down1(x1)
         x2Att = self.cbam2(x2)
-        x3 = self.down2(x2Att)
+        x3 = self.down2(x2)
         x3Att = self.cbam3(x3)
-        x4 = self.down3(x3Att)
+        x4 = self.down3(x3)
         x4Att = self.cbam4(x4)
-        x5 = self.down4(x4Att)
+        x5 = self.down4(x4)
         x5Att = self.cbam5(x5)
-
-        # pass the encoded features through the decoder
         x = self.up1(x5Att, x4Att)
         x = self.up2(x, x3Att)
         x = self.up3(x, x2Att)
         x = self.up4(x, x1Att)
-
-        # pass the output features through the output layer
         logits = self.outc(x)
-
-        # split the output sequence into SLA and SST
-        sla_pred, sst_pred = torch.chunk(logits, 2, dim=1)
-
-        # add last sla and sst timesteps and return
-        return sla_pred + last_sla_input, sst_pred + last_sst_input
+        return logits
