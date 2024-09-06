@@ -10,6 +10,7 @@ author: @jmerigot
 # |                                                                                       | #
 # +---------------------------------------------------------------------------------------+ #
 
+import torch
 import numpy as np
 
 
@@ -55,3 +56,10 @@ def standard_scaler_with_train(data, indices, mean=None, std=None):
     scaled_data = (transformed_data - mean) / std
     
     return scaled_data, mean, std
+
+def custom_transform(image):
+    image = torch.tensor(image, dtype=torch.float32).unsqueeze(0)
+    image = torch.flip(image, [1])  
+    image = image[:, :128, :128]
+    #image = image[:, 88:216, 142:270] 
+    return image
