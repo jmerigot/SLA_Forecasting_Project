@@ -58,5 +58,14 @@ test_set, test_loader, test_mean, test_std = data_module.test_dataloader()
 
 
 # launch training
-trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+model_training = trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 print("Training completed!")
+
+# validate training
+model_validation = trainer.validate(model, dataloaders=val_loader)
+
+# testing results
+model_testing = trainer.test(model, dataloaders=test_loader)
+
+# make predictions
+predictions = trainer.predict(model, dataloaders=test_loader)

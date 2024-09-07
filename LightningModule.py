@@ -50,6 +50,8 @@ class SLA_Lightning_Module(L.LightningModule):
         }
         return [optimizer], [lr_scheduler]
     
+    # Weighted MSE Loss: quadratically increase weight of loss of images over a sequence
+    # later time steps have more weight which forces the model to learn them
     def compute_loss(self, predictions, target_sequence, weighted_loss='quadratic'):
         mse_loss = self.loss_criterion(predictions, target_sequence)
         

@@ -20,12 +20,17 @@ from models.SLA_SST_SmaAt_UNet import SmaAt_UNet_SLA_SST
 """
 Only modify this file to make changes to forecasting process.
 
+Dataloader config:
  - sequence_length variable determines the prediction horizon
  
+Model config:
  - model_name determines the model being used 
    (MAKE SURE to change include_sst to False in dataloader_config if using SLA-SmaAt-UNet)
 """
 
+#---------------------------------------------#
+#             DATALOADER CONFIG               #
+#---------------------------------------------#
 
 transform = transforms.Compose([
     transforms.Lambda(custom_transform)
@@ -47,6 +52,11 @@ dataloader_config={'dataset_path': ['/data/home/jmerigot/start_data/sla_ts.npy',
                    'model_is_3dconv': False, # in case using a model with 3D convolutions; rare
                    'scale_with_train': False} # in case want to standard scale all datasets using the mean/std of the training set; rare
 
+
+
+#---------------------------------------------#
+#                MODEL CONFIG                 #
+#---------------------------------------------#
 
 models_dict = {
     "smaat_unet_sla": SmaAt_UNet_SLA,
