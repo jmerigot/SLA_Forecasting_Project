@@ -26,6 +26,19 @@ We also load our models, configure the optimizers, and compute the loss.
 class SLA_Lightning_Module(L.LightningModule):
     def __init__(self, models_dict, model_name, **kwargs):
         super().__init__()
+        """
+        Main training class.
+        Includes optimizers, loss function, training step, validation step, testing step, prediction step.
+        
+        Args
+        ----
+        models_dict: dict
+            dictionary with the number of channels and number of classes for each model
+        model_name: str
+            name of the model
+        **kwargs: str
+            model parameters found in the models_dict
+        """
         
         self.model_name = model_name
         self.model = models_dict[model_name](**kwargs)
@@ -33,6 +46,15 @@ class SLA_Lightning_Module(L.LightningModule):
         self.loss_criterion = nn.MSELoss(reduction='none')
 
     def forward(self, x1, x2=None):
+        """
+        Args
+        ----
+        x1: tensor
+            SLA data tensor input for the network
+        x2: tensor, optional
+            SST data tensor input for the network. The default is None unless using SST data.
+        """
+        
         if self.model_name == "smaat_unet_sla":
             return self.model(x1)
         elif self.model_name == "smaat_unet_sla_sst":
@@ -50,9 +72,14 @@ class SLA_Lightning_Module(L.LightningModule):
         }
         return [optimizer], [lr_scheduler]
     
-    # Weighted MSE Loss: quadratically increase weight of loss of images over a sequence
-    # later time steps have more weight which forces the model to learn them
     def compute_loss(self, predictions, target_sequence, weighted_loss='quadratic'):
+        """
+        Weighted MSE Loss: quadratically increase weight of loss of images over a sequence.
+        Later time steps have more weight which forces the model to learn them.
+        
+        MSE loss criterion has reduction='none' so that loss is calculated independently for each image rather than one total loss.
+        """
+        
         mse_loss = self.loss_criterion(predictions, target_sequence)
         
         sequence_length = target_sequence.size(1)

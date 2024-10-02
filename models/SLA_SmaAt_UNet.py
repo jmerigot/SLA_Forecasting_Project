@@ -166,9 +166,9 @@ class OutConv(nn.Module):
         return self.conv(x)  
     
     
-################################################
-################### MODEL ######################
-################################################
+#----------------------------------------------#
+#                    MODEL                     #
+#----------------------------------------------#
 
 class SmaAt_UNet_SLA(nn.Module):
     def __init__(self, n_channels, n_classes, kernels_per_layer=2, bilinear=True, reduction_ratio=16):

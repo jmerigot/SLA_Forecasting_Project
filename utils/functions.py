@@ -15,6 +15,24 @@ import numpy as np
 
 
 def standard_scaler(data, indices):
+    """
+    Standard scaling function applied to each dataset.
+
+    Args
+    ----
+    data: numpy
+        numpy time series dataset (shape : time, *image_shape)
+    indices: list
+        list of range of indices of the dataset split to seperate training, validation, testing
+
+    Returns
+    -------
+    scaled_data: numpy
+        scaled numpy time series dataset (shape: time, width, height)
+    mean, std: int
+        mean and std of the scaled dataset
+    """
+    
     transformed_data = []
     
     for i in indices:
@@ -32,7 +50,29 @@ def standard_scaler(data, indices):
     
     return scaled_data, mean, std
 
+
 def standard_scaler_with_train(data, indices, mean=None, std=None):
+    """
+    Scaling all datasets using the mean and std of the training set. 
+    (would only be used if putting model into widespread production, for example)
+
+    Args
+    ----
+    data: numpy
+        numpy time series dataset (shape : time, *image_shape)
+    indices: list
+        list of range of indices of the dataset split to seperate training, validation, testing
+    mean, std: int
+        mean and std of the training set. The default is None.}
+
+    Returns
+    -------
+    scaled_data: numpy
+        scaled numpy time series dataset (shape: time, width, height)
+    mean, std: int
+        mean and std of the scaled dataset
+    """
+    
     transformed_data = []
     
     for i in indices:
@@ -57,9 +97,26 @@ def standard_scaler_with_train(data, indices, mean=None, std=None):
     
     return scaled_data, mean, std
 
+
 def custom_transform(image):
+    """
+    Custom transformation applied to each image in the datasets.
+    Transformation:
+     - Transform to tensor,
+     - Flip upside down since all data is South-side up,
+     - Crop to upper 128x128 pixels to isolate dynamic region of the Gulf Stream.
+
+    Args
+    ----
+    image: numpy
+        singular numpy image from the dataset
+
+    Returns
+    -------
+    image: tensor
+        transformed image as a torch tensor
+    """
     image = torch.tensor(image, dtype=torch.float32).unsqueeze(0)
     image = torch.flip(image, [1])  
     image = image[:, :128, :128]
-    #image = image[:, 88:216, 142:270] 
     return image

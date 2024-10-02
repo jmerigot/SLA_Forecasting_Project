@@ -20,7 +20,7 @@ from utils.functions import standard_scaler, standard_scaler_with_train
 
 """
 Custom Dataset using LightningDataModules and inherited from Pytorch Dataset
-Take a .npy image time series as dataset and create time series for training of length L_source+L_target
+Take .npy image time series as dataset and create time series for training of length L_source+L_target
 """
 
 
@@ -175,6 +175,8 @@ class time_series_module(L.LightningDataModule):
             train_set = (self.dataset[0][test_size:train_size+test_size], self.dataset[1][test_size:train_size+test_size])
             val_set = (self.dataset[0][train_size+test_size:total_images], self.dataset[1][train_size+test_size:total_images])
             test_set = (self.dataset[0][0:test_size], self.dataset[1][0:test_size])
+            
+            # for testing specific cutoffs
             """
             train_set = (self.dataset[0][365:7776], self.dataset[1][365:7776])
             val_set = (self.dataset[0][7777:9051], self.dataset[1][7777:9051])
@@ -186,6 +188,8 @@ class time_series_module(L.LightningDataModule):
             train_set = self.dataset[test_size:train_size + test_size]
             val_set = self.dataset[train_size + test_size:total_images]
             test_set = self.dataset[0:test_size]
+            
+            # for testing specific cutoffs
             """
             train_set = self.dataset[365:7776]
             val_set = self.dataset[7777:9051]
