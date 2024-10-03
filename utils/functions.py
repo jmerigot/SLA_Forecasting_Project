@@ -144,3 +144,26 @@ def inverse_scale(image, mean, std):
     
     inverse_image = image * std + mean
     return inverse_image
+
+
+def inverse_transform(image, mean, std):
+    """
+    Inverse transform function for predicted images before visualization and metric evalution.
+    Inverse scale and flip back to original orientation.
+
+    Args
+    ----
+    image: tensor
+        the predicted image as a tensor of shape torch.Size([128, 128])
+    mean, std: tensor
+        the corresponding mean and std of the image of shape torch.Size([1, 1])
+
+    Returns
+    -------
+    inverse_image: tensor
+        the inversed transformed predicted image ready for visualisation
+    """
+    
+    inverse_image = image * std + mean
+    inverse_image = torch.flipud(inverse_image)
+    return inverse_image
