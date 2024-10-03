@@ -15,6 +15,7 @@ from torchvision import transforms
 from utils.functions import custom_transform
 from models.SLA_SmaAt_UNet import SmaAt_UNet_SLA
 from models.SLA_SST_SmaAt_UNet import SmaAt_UNet_SLA_SST
+from models.SST_SmaAt_UNet import SmaAt_UNet_SST
 
 
 """
@@ -36,6 +37,8 @@ transform = transforms.Compose([
     transforms.Lambda(custom_transform)
 ])
 
+"""Define prediction horizon for forecasts.
+"""
 ####################
 sequence_length = 10
 ####################
@@ -60,14 +63,20 @@ dataloader_config={'dataset_path': ['/data/home/jmerigot/start_data/sla_ts.npy',
 
 models_dict = {
     "smaat_unet_sla": SmaAt_UNet_SLA,
+    "smaat_unet_sst": SmaAt_UNet_SST,
     "smaat_unet_sla_sst": SmaAt_UNet_SLA_SST
 }
 
+"""Select model to be used. 
+If using an SST data-based model, include_sst must be set to True in the dataloader_config.
+"""
 #################################
 model_name = 'smaat_unet_sla_sst'
 #################################
 
 if model_name == 'smaat_unet_sla':
+    model_params = {'n_channels': sequence_length, 'n_classes': sequence_length}
+elif model_name == 'smaat_unet_sst':
     model_params = {'n_channels': sequence_length, 'n_classes': sequence_length}
 elif model_name == 'smaat_unet_sla_sst':
     model_params = {'n_channels': sequence_length*2, 'n_classes': sequence_length*2}

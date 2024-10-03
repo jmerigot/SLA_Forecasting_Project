@@ -21,6 +21,8 @@ from utils.functions import standard_scaler, standard_scaler_with_train
 """
 Custom Dataset using LightningDataModules and inherited from Pytorch Dataset
 Take .npy image time series as dataset and create time series for training of length L_source+L_target
+
+Location of data can be changed using the dataset_path arg of the dataloader config in the config.py file.
 """
 
 
@@ -28,8 +30,8 @@ class time_series_dataset(Dataset):
 
     def __init__(self, datasets, L_source, L_target, dt, transform=None, model_is_3dconv=False, include_sst=False):
         """
-        Parameters
-        ----------
+        Args
+        ----
         dataset : numpy
             numpy time series dataset (shape : time, *image_shape)
         L_source, L_target : int
@@ -38,6 +40,10 @@ class time_series_dataset(Dataset):
             timestep for the time series in days
         transform : pytorch transform, optional
             transformation to apply to the data. The default is None.
+        model_is_3dconv: boolean
+            whether the model uses 3D convolutions, not used for our models. Default is False.
+        include_sst: boolean
+            whether to include additional SST image data. Default is False.
         """
         self.include_sst = include_sst
         if self.include_sst:
@@ -59,6 +65,13 @@ class time_series_dataset(Dataset):
     def __getitem__(self, idx):
         """
         Main function of the CustomDataset class. 
+        
+        Returns (one or the other depending on include_sst)
+        -------
+        item: dict
+            dictionary with input and target tensor sequences for SLA and SST
+        input_images, target_images: tensor
+            input and target tensor sequences of SLA
         """
         input_start = idx
         input_end = idx + self.L_source
@@ -104,10 +117,11 @@ class time_series_dataset(Dataset):
         else:
             return input_images, target_images
 
+# not used with LightningDataModule
 def load_item(index, dataset, L_source, L_target, dt):
     """
-    Parameters
-    ----------
+    Args
+    ----
     index : int
     dataset : numpy
         numpy time series dataset (shape : time, *image_shape)
@@ -138,8 +152,8 @@ class time_series_module(L.LightningDataModule):
     def __init__(self, dataloader_config):
         super().__init__()
         """
-        Parameters
-        ----------
+        Args
+        ----
         dataloader_config : dict
             dataloader configuration (see config.py).
 
@@ -176,7 +190,7 @@ class time_series_module(L.LightningDataModule):
             val_set = (self.dataset[0][train_size+test_size:total_images], self.dataset[1][train_size+test_size:total_images])
             test_set = (self.dataset[0][0:test_size], self.dataset[1][0:test_size])
             
-            # for testing specific cutoffs
+            # for testing specific year cutoffs
             """
             train_set = (self.dataset[0][365:7776], self.dataset[1][365:7776])
             val_set = (self.dataset[0][7777:9051], self.dataset[1][7777:9051])
@@ -189,7 +203,7 @@ class time_series_module(L.LightningDataModule):
             val_set = self.dataset[train_size + test_size:total_images]
             test_set = self.dataset[0:test_size]
             
-            # for testing specific cutoffs
+            # for testing specific year cutoffs
             """
             train_set = self.dataset[365:7776]
             val_set = self.dataset[7777:9051]
@@ -197,6 +211,8 @@ class time_series_module(L.LightningDataModule):
             """
         
         # standard scaling of the datasets
+        # scale_with_train is used in case we want to standard scale all datasets using the mean/std of the training set; RARE !
+        # (would only be used if putting model into widespread production, for example)
         if self.dataloader_config['scale_with_train']:
             if self.dataloader_config['include_sst']:
                 scaled_train_set_sla, train_mean_sla, train_std_sla = standard_scaler_with_train(train_set[0], list(range(len(train_set[0]))))
@@ -241,7 +257,7 @@ class time_series_module(L.LightningDataModule):
                 scaled_val_set, _, _ = standard_scaler(val_set, list(range(len(val_set))))
                 scaled_test_set, self.mean, self.std = standard_scaler(test_set, list(range(len(test_set))))
         
-        # create dataset objects        
+        # create dataset objects using config settings    
         self.training_set = time_series_dataset(scaled_train_set,
                                                 self.dataloader_config['length_source'],
                                                 self.dataloader_config['length_target'],
@@ -266,14 +282,15 @@ class time_series_module(L.LightningDataModule):
                                                self.dataloader_config['model_is_3dconv'],
                                                self.dataloader_config['include_sst'])
             
+    # create dataloaders for training, validation, and testing
     def train_dataloader(self):
         training_generator = DataLoader(self.training_set,
-                                        num_workers=15, 
+                                        num_workers=15, # to accelerate training
                                         batch_size=self.dataloader_config['batch_size'], 
                                         shuffle=True)
         
         if self.dataloader_config['small_train']:
-            train_sampler = SubsetRandomSampler([i for i in range(0, len(self.training_set), 2)]) #only half data to compute faster 
+            train_sampler = SubsetRandomSampler([i for i in range(0, len(self.training_set), 2)]) # only half data to compute faster 
             training_generator = DataLoader(self.training_set,
                                             batch_size=self.dataloader_config['batch_size'],
                                             sampler=train_sampler)

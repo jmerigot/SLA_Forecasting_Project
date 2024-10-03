@@ -57,6 +57,8 @@ class SLA_Lightning_Module(L.LightningModule):
         
         if self.model_name == "smaat_unet_sla":
             return self.model(x1)
+        elif self.model_name == "smaat_unet_sst":
+            return self.model(x1, x2)
         elif self.model_name == "smaat_unet_sla_sst":
             return self.model(x1, x2)
         else:
@@ -106,8 +108,8 @@ class SLA_Lightning_Module(L.LightningModule):
             input_sla, input_sst, target_sla, target_sst = batch['input_sla'], batch['input_sst'], batch['target_sla'], batch['target_sst']
             if self.model_name == 'smaat_unet_sla_sst':
                 predictions_sla, predictions_sst = self(input_sla, input_sst)
-                loss_sla = self.compute_loss(predictions_sla, target_sla)
-                loss_sst = self.compute_loss(predictions_sst, target_sst)
+                loss_sla = self.compute_loss(predictions_sla, target_sla) # compute SLA loss
+                loss_sst = self.compute_loss(predictions_sst, target_sst) # compute SST loss
                 loss = loss_sla + loss_sst  
             elif self.model_name == 'smaat_unet_sst':
                 predictions = self(input_sla, input_sst)

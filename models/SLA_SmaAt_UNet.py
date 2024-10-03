@@ -15,6 +15,8 @@ from torch import nn
 import torch.nn.functional as F
 
 """
+Attention-based neural network that forecasts SLA image fields and takes stricly SLA data sequences as inputs.
+
 Inspired by the SmaAt-UNet model: https://github.com/HansBambel/SmaAt-UNet
 """
 

@@ -50,7 +50,7 @@ trainer = L.Trainer(
 #                  TRAINING                   #
 #---------------------------------------------#
 
-# define model using Lightning Module
+# define model using LightningModule
 model = SLA_Lightning_Module(models_dict, model_name, **model_params)
 
 # load data

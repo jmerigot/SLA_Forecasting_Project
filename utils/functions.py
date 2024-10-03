@@ -51,6 +51,7 @@ def standard_scaler(data, indices):
     return scaled_data, mean, std
 
 
+
 def standard_scaler_with_train(data, indices, mean=None, std=None):
     """
     Scaling all datasets using the mean and std of the training set. 
@@ -68,7 +69,7 @@ def standard_scaler_with_train(data, indices, mean=None, std=None):
     Returns
     -------
     scaled_data: numpy
-        scaled numpy time series dataset (shape: time, width, height)
+        scaled numpy time series dataset, of shape: time, width, height (e.g.: [10, 128, 128] for sequence of 10 images)
     mean, std: int
         mean and std of the scaled dataset
     """
@@ -98,6 +99,7 @@ def standard_scaler_with_train(data, indices, mean=None, std=None):
     return scaled_data, mean, std
 
 
+
 def custom_transform(image):
     """
     Custom transformation applied to each image in the datasets.
@@ -120,3 +122,25 @@ def custom_transform(image):
     image = torch.flip(image, [1])  
     image = image[:, :128, :128]
     return image
+
+
+
+def inverse_scale(image, mean, std):
+    """
+    Inverse scale function for predicted images before visualization and metric evalution.
+
+    Args
+    ----
+    image: tensor
+        the predicted image as a tensor of shape torch.Size([128, 128])
+    mean, std: tensor
+        the corresponding mean and std of the image of shape torch.Size([1, 1])
+
+    Returns
+    -------
+    inverse_image: tensor
+        the inversed scaled predicted image ready for visualisation
+    """
+    
+    inverse_image = image * std + mean
+    return inverse_image

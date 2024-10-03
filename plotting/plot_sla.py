@@ -17,6 +17,7 @@ from matplotlib import colors
 
 from config import model_name
 from Trainer import test_mean, test_std, test_set, predictions
+from utils.functions import inverse_scale
 
 """
 Run this file to plot visualizations of forecasted SLA sequences.
@@ -54,9 +55,6 @@ std = torch.tensor(test_std, dtype=torch.float32)
 mean = mean[0]
 std = std[0]
 
-# inverse scale function for images
-def inverse_scale(image, mean, std):
-    return image * std + mean
 
 # function to visualize sequences of predictions and targets side by side
 def visualize_prediction_and_target_sequence(predictions, targets, mean=None, std=None, sample_index=0, use_sst=False):
