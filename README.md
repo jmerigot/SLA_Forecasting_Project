@@ -2,7 +2,7 @@
 
 ## Author: Jules Merigot
 
-*This research project was completed during an end-of-study internship at the LOCEAN laboratory of the IPSL-CNRS collaboration located on the Pierre et Marie Curie Campus of Sorbonne University in Paris, and the final report was submitted to the MIDO Department of Computer Science of Paris Dauphine University in partial fulfillment of the requirements for the masters degree of Master IASD, Artificial Intelligence and Data Science.*
+*This research project was completed during an end-of-study internship at the LOCEAN laboratory of the IPSL-CNRS collaboration located on the Pierre et Marie Curie Campus of Sorbonne University in Paris. The final report was submitted to the MIDO Department of Computer Science of Paris Dauphine University in partial fulfillment of the requirements for the masters degree of Master IASD, Artificial Intelligence and Data Science.*
 
 ---
 
